@@ -3,10 +3,11 @@ import NewsComp from './newsComp';
 import Spinner from './spinner';
 import PropTypes from 'prop-types';
 
+
 export class News extends Component {
     static defaultProps = {
         country: 'in',
-        pageSize: 5,
+        pageSize: 18,
         category: 'general',
     };
 
@@ -83,6 +84,8 @@ export class News extends Component {
                                     description={element.description ? element.description.slice(0, 88) : ''}
                                     urlToImage={element.urlToImage ? element.urlToImage : fallbackImage}
                                     url={element.url}
+                                    publishedAt={element.publishedAt}
+                                    author={!element.author ? "Unknown" : element.author}
                                 />
                             </div>
                         ))}
