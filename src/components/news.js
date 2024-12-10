@@ -27,42 +27,37 @@ export class News extends Component {
     }
 
     async fetchNews(page) {
-    const apiKey = process.env.REACT_APP_NEWS_API_KEY;
-    const proxyUrl = 'https://cors-anywhere.herokuapp.com/'; // Use a public CORS proxy
-    const targetUrl = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${apiKey}&page=${page}&pageSize=${this.props.pageSize}`;
-    const url = `${proxyUrl}${targetUrl}`;
-
-    console.log("Fetching news from:", url);
-
-    if (!apiKey) {
-        console.error("API key is not defined. Please set REACT_APP_NEWS_API_KEY in the .env file.");
-        this.setState({ articles: [], loading: false });
-        return;
-    }
-
-    try {
-        this.setState({ loading: true });
-
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+        const apiKey = process.env.REACT_APP_NEWS_API_KEY;
+        console.log("API Key from process.env:", process.env.REACT_APP_NEWS_API_KEY);
+        if (!apiKey) {
+            console.error("API key is not defined. Please set REACT_APP_NEWS_API_KEY in the .env file.");
+            this.setState({ articles: [], loading: false });
+            return;
         }
 
-        const parsedData = await response.json();
-        this.setState({
-            articles: parsedData.articles || [],
-            totalResults: parsedData.totalResults || 0,
-            loading: false,
-        });
-    } catch (error) {
-        console.error('Error fetching the news:', error);
-        this.setState({
-            articles: [],
-            loading: false,
-        });
-    }
-}
+        try {
+            const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${apiKey}&page=${page}&pageSize=${this.props.pageSize}`;
+            this.setState({ loading: true });
 
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const parsedData = await response.json();
+            this.setState({
+                articles: parsedData.articles || [],
+                totalResults: parsedData.totalResults || 0,
+                loading: false,
+            });
+        } catch (error) {
+            console.error('Error fetching the news:', error);
+            this.setState({
+                articles: [], // Ensure no rendering issues occur
+                loading: false,
+            });
+        }
+    }
 
 
     componentDidMount() {
