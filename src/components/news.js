@@ -27,37 +27,52 @@ export class News extends Component {
     }
 
     async fetchNews(page) {
-        const apiKey = process.env.REACT_APP_NEWS_API_KEY;
-        console.log("API Key from process.env:", process.env.REACT_APP_NEWS_API_KEY);
-        if (!apiKey) {
-            console.error("API key is not defined. Please set REACT_APP_NEWS_API_KEY in the .env file.");
-            this.setState({ articles: [], loading: false });
-            return;
-        }
-
-        try {
-            const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${apiKey}&page=${page}&pageSize=${this.props.pageSize}`;
-            this.setState({ loading: true });
-
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const parsedData = await response.json();
-            this.setState({
-                articles: parsedData.articles || [],
-                totalResults: parsedData.totalResults || 0,
-                loading: false,
-            });
-        } catch (error) {
-            console.error('Error fetching the news:', error);
-            this.setState({
-                articles: [], // Ensure no rendering issues occur
-                loading: false,
-            });
-        }
+    const apiKey = process.env.REACT_APP_NEWS_API_KEY;
+    console.log("API Key from process.env:", apiKey);
+    if (!apiKey) {
+        console.error("API key is not defined. Please set REACT_APP_NEWS_API_KEY in the .env file.");
+        this.setState({ articles: [], loading: false });
+        return;
     }
+
+    try {
+        const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${apiKey}&page=${page}&pageSize=${this.props.pageSize}`;
+        console.log("Fetching news from:", url);
+
+        this.setState({ loading: true });
+
+        const response = await fetch(url, {
+            headers: {
+                'Upgrade-Insecure-Requests': '1',
+                'Accept': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            // Log the status and response for debugging
+            console.error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
+            if (response.status === 426) {
+                console.error("426 Upgrade Required: Ensure the request is made over HTTPS.");
+            }
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const parsedData = await response.json();
+        console.log("Fetched data:", parsedData);
+
+        this.setState({
+            articles: parsedData.articles || [],
+            totalResults: parsedData.totalResults || 0,
+            loading: false,
+        });
+    } catch (error) {
+        console.error('Error fetching the news:', error.message || error);
+        this.setState({
+            articles: [], // Ensure no rendering issues occur
+            loading: false,
+        });
+    }
+}
 
 
     componentDidMount() {
